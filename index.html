@@ -52,19 +52,41 @@
       background-color: #f1a33c;
       color: white;
     }
+
     .operator:hover {
       background-color: #d9912c;
     }
+    .tax {
+      background-color: #7d7d7d;
+      color: white;
+    }
+
+    .half-button{
+      display: grid;
+      /* 1行に2列を設定 */
+      grid-template-columns: repeat(2, 1fr); 
+      gap: 4px;
+      /*この要素はグリッド1列分の幅を使う*/
+      grid-column: span 1;
+    }
+
   </style>
 </head>
 <body>
 <div class="calculator">
   <input type="text" id="display" readonly>
   <div class="buttons">
+    <button class="tax">税込</button>
+    <button class="tax">税抜</button>
+    <button class="tax">軽減税込</button>
+    <button class="tax">軽減税抜</button>
     <button class="control">C</button>
     <button>(</button>
     <button>)</button>
-    <button class="operator">/</button>
+    <div class="half-button">
+      <button class="operator">/</button>
+      <button class="operator">%</button>
+    </div>
     <button>7</button>
     <button>8</button>
     <button>9</button>
@@ -90,10 +112,14 @@
   //演算子をすべて入れる
   const operatorAll = document.querySelectorAll('.operator');
   //数字ボタンをすべて入れる
-  const numberAll = document.querySelectorAll('button:not(.operator):not(.control)');
+  const numberAll = document.querySelectorAll('button:not(.operator):not(.control):not(.tax)');
   //クリア、バックスペースを入れる
   const controlAll = document.querySelectorAll('.control');
+  //税抜き、税込みを入れる
+  const taxAll =document.querySelectorAll('.tax')
 
+
+  //operatorクラスの処理
   operatorAll.forEach(function(button, i) {
     button.addEventListener('click', function() {
       //一文字ずつvaleに入れる
@@ -109,30 +135,58 @@
             display.value = "エラー";
           }
         }else{
+          //演算子をスタックしていく
           display.value += value;
         }
         });
       });
 
+   
+  //controllクラスの処理
   controlAll.forEach(function(button) {
     button.addEventListener('click', function() {
-    const value = button.textContent;
-    
-    if (value === "C") {
-      display.value = "";
-    } else if (value === "←") {
-      display.value = display.value.slice(0, -1);
-    }
-  });
-});    
+      const value = button.textContent;
 
-    // 数字ボタンにもクリックイベントを追加
-numberAll.forEach(function(button) {
-  button.addEventListener('click', function() {
-    const value = button.textContent;
-    display.value += value;  // 数字を表示に追加
+      //Cだったら空文字にする
+      if (value === "C") {
+        display.value = "";
+      //←だったら一文字消す
+      } else if (value === "←") {
+        display.value = display.value.slice(0, -1);
+      }
+    });
+  });  
+
+  // 数字のクリックイベント（クラスなし）
+  numberAll.forEach(function(button) {
+    button.addEventListener('click', function() {
+      const value = button.textContent;
+      //数字をスタックしていく
+      display.value += value;
+   });
   });
-});
+
+
+  //taxクラスの処理
+  taxAll.forEach(function(button) {
+    button.addEventListener('click', function() {
+
+      //*textContent(文字列)だと、Nanになるため数字に変換
+      const value = parseFloat(display.value);
+      //数じゃない場合は無視
+      if (isNaN(value)) return; 
+      
+      if (button.textContent === "税込") {
+        /*税は基本少数2桁表示のため*/
+        display.value = (value * 1.1).toFixed(2);
+      } else if (button.textContent === "税抜") {
+        display.value = (value / 1.1).toFixed(2);
+      } else if (button.textContent == "軽減税込"){
+      display.value = (value * 1.08).toFixed(2);
+      } else if (button.textContent == "軽減税抜")
+      display.value = (value / 1.08).toFixed(2);
+    });
+  });
 
 </script>
 </body>
